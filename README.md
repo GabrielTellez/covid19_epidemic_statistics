@@ -5,14 +5,16 @@ Visualization and analysis of COVID-19 epidemic data statistics
 Jupyter notebook to visualize epidemic data. Compare different countries evolutions from the first day with same number of cases.
 
 ## quarantine.py 
-Data for quarantine starting date of several coiuntries.
+Data for quarantine starting date of several countries.
 
 ## Dependencies:
-Install dependencies using conda:
-covid_env.yml YML file to recreate conda environment:
-conda env create -f covid_env.yml
+Install dependencies using conda:  
+covid_env.yml YML file to recreate conda environment:  
+conda env create -f covid_env.yml  
+
 or
-using pip:
+
+using pip:  
 pip install -r requirements.txt
 
 ## tmp
