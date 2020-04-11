@@ -7,6 +7,14 @@ Jupyter notebook to visualize epidemic data. Compare different countries evoluti
 ## quarantine.py 
 Data for quarantine starting date of several coiuntries.
 
+## Dependencies:
+Install dependencies using conda:
+covid_env.yml YML file to recreate conda environment:
+conda env create -f covid_env.yml
+or
+using pip:
+pip install -r requirements.txt
+
 ## tmp
 Scratch area for new code test
 
