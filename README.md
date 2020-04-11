@@ -13,5 +13,7 @@ Scratch area for new code test
 ## data
 Backups of epidemic statistic data. Up to date data is from 
 https://datahub.io/core/covid-19/datapackage.json
-based from Johns Hopkins University Center for Systems Science and Engineering (CSSE) data.
+based from Johns Hopkins University Center for Systems Science and Engineering (CSSE) data at:
+https://www.arcgis.com/apps/opsdashboard/index.html#/bda7594740fd40299423467b48e9ecf6
+
 
