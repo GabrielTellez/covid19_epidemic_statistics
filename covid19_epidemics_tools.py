@@ -47,9 +47,18 @@ def getdata(data_url = 'https://datahub.io/core/covid-19/datapackage.json', reso
     """
     Get data from the web.
 
+    Parameters:
+    ===========
+
     data_url : string with url of the data from datahub
     
     resourcename : resource to use
+
+    Output:
+    =======
+
+    pd.DataFrame with the epidemic statistics data
+
     """
 
     # to load Data Package into storage
