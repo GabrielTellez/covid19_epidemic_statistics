@@ -45,8 +45,10 @@ quarantine = {
 
 def getdata(data_url = 'https://datahub.io/core/covid-19/datapackage.json', resourcename='countries-aggregated_csv'):
     """
-    Get data from the web
+    Get data from the web.
+
     data_url : string with url of the data from datahub
+    
     resourcename : resource to use
     """
 
@@ -89,7 +91,9 @@ def savedata(dataframe,filenamebase='data/covid_data_',date=datetime.date.today(
     ----------
 
     dataframe : pd.DataFrame to save. Default 'covid_data_'
+    
     filenamebase : basename of the saved file. Full filename is filenamebase + date + '.csv'
+    
     date : date of the data. Default: today's date
     """
     filename='%s%s.csv' % (filenamebase,date)
@@ -98,28 +102,34 @@ def savedata(dataframe,filenamebase='data/covid_data_',date=datetime.date.today(
 
 defaultcountrylist=('Colombia', 'Italy', 'US')
 d=getdata()
-def builddatalist(indicator = 'Confirmed', minindicator=1, show = None, showtype='Cumulative', countrylist=defaultcountrylist, fulldata=d):
+typeshow_options = {
+    'cumulative' : None,
+    'daily increase' : 'diff',
+    'daily percentage increase' : 'pct_change'
+} 
+def builddatalist(indicator = 'Confirmed', minindicator=1, show = None, showtype='cumulative', countrylist=defaultcountrylist, fulldata=d):
     """
     Build a list of data for selected countries 
     
     Parameters
     ----------
     indicator : indicator to shift the time series
+    
     minindicator : value to start the time series. 
         Day 0 corresponds to the day when indicator >= minindicator
+    
     show : column to show. 
+    
     showtype : 'Cumulative' (default) no change in column 'show'. 
         Other options: 'Daily increase', 'Daily percentage increase'. These are created on demand.
+    
     countrylist : list of countries to build the datalist
+    
     fulldata : raw data for all countries
     """
     if show is None:
         show=indicator
-    typeshow_options = {
-        'Cumulative' : None,
-        'Daily increase' : 'diff',
-        'Daily percentage increase' : 'pct_change'
-    } 
+
     datalist={}
     for country in countrylist:
         dat=fulldata[fulldata['Country']==country]
@@ -127,33 +137,46 @@ def builddatalist(indicator = 'Confirmed', minindicator=1, show = None, showtype
         # Check and create increase column if necessary
         preprocess_method=typeshow_options.get(showtype, None)
         if preprocess_method is not None:
-            # this method creates the new column: dat[indcator].diff() or pct_change()
-            method = getattr(dat[indicator],preprocess_method)
-            dat[showtype]=method()
+            # this method creates the new column: dat[indicator].diff() or pct_change()
+            method = getattr(dat[show],preprocess_method)
+            label = '%s %s' % (show, showtype)
+            dat[label]=method()
         dat['Day']=np.arange(len(dat))
         datalist[country]=dat
     return datalist
 
-def plotdata(indicator = 'Confirmed', minindicator=1, show = None, dayrange = {'min': 0, 'max' : -1}, 
+def plotdata(indicator = 'Confirmed', minindicator=1, show = None, showtype='cumulative', dayrange = {'min': 0, 'max' : -1}, 
              logscale=True, countrylist=defaultcountrylist, fulldata=d):
     """
     Plots data for selected countries and indicator
     
     Parameters
     ----------
+    
     indicator : indicator to shift the time series
+    
     minindicator : value to start the time series. 
         Day 0 corresponds to the day when indicator >= minindicator
+    
     show = column to show on plot. Default = indicator
+    
     dayrange : dict with min, max range to plot. max=-1 is plot all
+    
     logscale: plot in logscale (True) or linear (False)
+    
     countrylist : list of countries to build the datalist
+    
     fulldata : raw data for all countries
     """
     if show is None:
         show=indicator
-    datalist=builddatalist(indicator, minindicator, countrylist, d)
+    datalist=builddatalist(indicator, minindicator, show, showtype, countrylist, d)
     fig, ax = plt.subplots(figsize=(12,6))
+    if showtype == 'cumulative':
+        ylabel = show
+    else:
+        ylabel = '%s %s' % (show, showtype)
+    
     for country in countrylist:
         color = next(ax._get_lines.prop_cycler)['color']
         df=datalist[country]
@@ -167,7 +190,7 @@ def plotdata(indicator = 'Confirmed', minindicator=1, show = None, dayrange = {'
         dayzero_date=dayzero_df.at[dayzero_df.index[-1],'Date']
         if not isinstance(logscale, bool):
             logscale=True
-        df.plot(x='Day',y=show,logy=logscale,label='%s day 0: %s' % (country,dayzero_date),ax=ax, color=color)
+        df.plot(x='Day',y=ylabel,logy=logscale,label='%s day 0: %s' % (country,dayzero_date),ax=ax, color=color)
         # get quarantine day info
         try:
             quarantine_date=quarantine[country]
@@ -185,13 +208,13 @@ def plotdata(indicator = 'Confirmed', minindicator=1, show = None, dayrange = {'
             else:
                 ax.axvline(x=quarantine_day, color=color,
                            label='%s quarantine on day %d (%s)' % (country,quarantine_day,quarantine_date))
-    ax.set_ylabel(show)
+    ax.set_ylabel(ylabel)
     ax.set_xlabel('Days from first day when "'+indicator+'" >='+str(minindicator))
     if logscale:
         labellog = ' (log scale)'
     else:
         labellog = ''   
-    ax.set_title(show+' covid-19' + labellog)
+    ax.set_title(ylabel+' covid-19' + labellog)
     ax.grid()
     ax.legend()
     return fig
