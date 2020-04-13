@@ -1,11 +1,13 @@
 # covid19_epidemic_statistics
 Visualization and analysis of COVID-19 epidemic data statistics
 
-## covid19_plots.ipynb
-Jupyter notebook to visualize epidemic data. Compare different countries evolutions from the first day with same number of cases.
+## Files:
 
-## quarantine.py 
-Data for quarantine starting date of several countries.
+### covid19_epidemics_tools.py 
+Module with function utilities to get and visualize data. Plots data for several countries to compare them.
+
+### testing.ipynb
+Jupyter Python example notebook using the tools from covid19_epidemics_tools.py.
 
 ## Dependencies:
 Install dependencies using conda:  
