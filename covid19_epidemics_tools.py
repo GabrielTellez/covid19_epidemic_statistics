@@ -98,7 +98,7 @@ def savedata(dataframe,filenamebase='data/covid_data_',date=datetime.date.today(
 
 defaultcountrylist=('Colombia', 'Italy', 'US')
 d=getdata()
-def builddatalist(indicator = 'Confirmed', minindicator=1, countrylist=defaultcountrylist, fulldata=d):
+def builddatalist(indicator = 'Confirmed', minindicator=1, show = None, showtype='Cumulative', countrylist=defaultcountrylist, fulldata=d):
     """
     Build a list of data for selected countries 
     
@@ -107,13 +107,29 @@ def builddatalist(indicator = 'Confirmed', minindicator=1, countrylist=defaultco
     indicator : indicator to shift the time series
     minindicator : value to start the time series. 
         Day 0 corresponds to the day when indicator >= minindicator
+    show : column to show. 
+    showtype : 'Cumulative' (default) no change in column 'show'. 
+        Other options: 'Daily increase', 'Daily percentage increase'. These are created on demand.
     countrylist : list of countries to build the datalist
     fulldata : raw data for all countries
     """
+    if show is None:
+        show=indicator
+    typeshow_options = {
+        'Cumulative' : None,
+        'Daily increase' : 'diff',
+        'Daily percentage increase' : 'pct_change'
+    } 
     datalist={}
     for country in countrylist:
         dat=fulldata[fulldata['Country']==country]
         dat=dat[dat[indicator]>=minindicator]
+        # Check and create increase column if necessary
+        preprocess_method=typeshow_options.get(showtype, None)
+        if preprocess_method is not None:
+            # this method creates the new column: dat[indcator].diff() or pct_change()
+            method = getattr(dat[indicator],preprocess_method)
+            dat[showtype]=method()
         dat['Day']=np.arange(len(dat))
         datalist[country]=dat
     return datalist
