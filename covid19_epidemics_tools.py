@@ -3,8 +3,10 @@ import pandas as pd
 from io import StringIO
 import requests
 import numpy as np
-import matplotlib.pyplot as plt
 import datetime
+import matplotlib.pyplot as plt
+plt.rcParams.update({'figure.max_open_warning': 0})
+
 
 # Quarantine start date
 # Data from
@@ -155,7 +157,7 @@ def builddatalist(indicator = 'Confirmed', minindicator=1, show = None, showtype
     return datalist
 
 def plotdata(indicator = 'Confirmed', minindicator=1, show = None, showtype='cumulative', dayrange = {'min': 0, 'max' : -1}, 
-             logscale=True, countrylist=defaultcountrylist, fulldata=d):
+             logscale=True, countrylist=defaultcountrylist, fulldata=d, figsize=(9.5,5)):
     """
     Plots data for selected countries and indicator
     
@@ -176,11 +178,13 @@ def plotdata(indicator = 'Confirmed', minindicator=1, show = None, showtype='cum
     countrylist : list of countries to build the datalist
     
     fulldata : raw data for all countries
+
+    figsize : figure size (to be passed to plt.subplot)
     """
     if show is None:
         show=indicator
     datalist=builddatalist(indicator, minindicator, show, showtype, countrylist, d)
-    fig, ax = plt.subplots(figsize=(12,6))
+    fig, ax = plt.subplots(figsize=figsize)
     if showtype == 'cumulative':
         ylabel = show
     else:
