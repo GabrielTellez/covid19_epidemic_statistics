@@ -42,7 +42,8 @@ quarantine = {
     'Norway': '2020-03-12',
     'El Salvador': '2020-03-11',
     'Denmark': '2020-03-13',
-    'Italy': '2020-03-10'
+    'Italy': '2020-03-10',
+    'US': '2020-03-23'
 }
 
 def getdata(data_url = 'https://datahub.io/core/covid-19/datapackage.json', resourcename='countries-aggregated_csv'):
