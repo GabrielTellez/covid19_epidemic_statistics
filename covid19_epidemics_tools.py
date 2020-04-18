@@ -228,7 +228,7 @@ def plotdata(indicator = 'Confirmed', minindicator=1, show = None, showtype='cum
         labellog = ' (log scale)'
     else:
         labellog = ''   
-    ax.set_title(ylabel+' covid-19' + labellog)
+    ax.set_title('%s covid-19 on %s %s' % ( ylabel, datetime.date.today().strftime("%d/%m/%Y"), labellog) )
     ax.grid()
     ax.legend()
     return fig
