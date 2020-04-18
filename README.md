@@ -12,6 +12,9 @@ Jupyter Python example notebook using the tools from covid19_epidemics_tools.py.
 ### [tmp/](tmp)
 Scratch area for new code test
 
+### [plots/](plots)
+Some plots obtained with the code.
+
 ### [data/](data)
 Backups of epidemic statistic data. Up to date data is from  
 https://datahub.io/core/covid-19/datapackage.json  
