@@ -130,7 +130,7 @@ def builddatalist(indicator = 'Confirmed', minindicator=1, show = None, showtype
     minindicator : value to start the time series. 
         Day 0 corresponds to the day when indicator >= minindicator
     
-    show : column to show. 
+    show : column to show. Default = indicator
     
     showtype : 'Cumulative' (default) no change in column 'show'. 
         Other options: 'Daily increase', 'Daily percentage increase'. These are created on demand.
@@ -144,7 +144,9 @@ def builddatalist(indicator = 'Confirmed', minindicator=1, show = None, showtype
 
     datalist={}
     for country in countrylist:
-        dat=fulldata[fulldata['Country']==country]
+        dat=fulldata[fulldata['Country']==country].copy()
+        if show == 'Infected':
+            dat['Infected']=dat['Confirmed']-dat['Recovered']-dat['Deaths']
         dat=dat[dat[indicator]>=minindicator]
         # Check and create increase column if necessary
         preprocess_method=typeshow_options.get(showtype, None)
