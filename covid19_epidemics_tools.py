@@ -112,14 +112,15 @@ def savedata(dataframe,filenamebase='data/covid_data_',date=datetime.date.today(
     with open(filename,'w') as file:
         dataframe.to_csv(file,index=False)
 
-defaultcountrylist=('Colombia', 'Italy', 'US')
+defaultcountrylist=['Colombia', 'Italy', 'US']
 d=getdata()
 typeshow_options = {
     'cumulative' : None,
     'daily increase' : 'diff',
     'daily percentage increase' : 'pct_change'
 } 
-def builddatalist(indicator = 'Confirmed', minindicator=1, show = None, showtype='cumulative', countrylist=defaultcountrylist, fulldata=d):
+def builddatalist(indicator = 'Confirmed', minindicator=1, show = None, showtype='cumulative', countrylist=defaultcountrylist, 
+    fulldata=d , wpfile='data/world_population_2020.csv'):
     """
     Build a list of data for selected countries 
     
@@ -137,16 +138,26 @@ def builddatalist(indicator = 'Confirmed', minindicator=1, show = None, showtype
     
     countrylist : list of countries to build the datalist
     
-    fulldata : raw data for all countries
+    fulldata : raw data for all countries  
+
+    wpfile : filename of the world population data
     """
     if show is None:
         show=indicator
-
+    indicator_list = ['Confirmed', 'Recovered', 'Deaths', 'Infected']
+    wp=pd.read_csv(wpfile, sep=';', index_col='Country' )
+    pop=wp.T.to_dict()
     datalist={}
     for country in countrylist:
         dat=fulldata[fulldata['Country']==country].copy()
-        if show == 'Infected':
-            dat['Infected']=dat['Confirmed']-dat['Recovered']-dat['Deaths']
+        dat['Infected']=dat['Confirmed']-dat['Recovered']-dat['Deaths']
+        popul=pop[country]['Population 2020']
+        for col in indicator_list:
+            if col != 'Confirmed':
+                name='%s/Confirmed' % (col)
+                dat[name]=dat[col]/dat['Confirmed']
+            name='%s/Total Population' % (col)
+            dat[name]=dat[col]/(popul*1000)
         dat=dat[dat[indicator]>=minindicator]
         # Check and create increase column if necessary
         preprocess_method=typeshow_options.get(showtype, None)
@@ -160,7 +171,7 @@ def builddatalist(indicator = 'Confirmed', minindicator=1, show = None, showtype
     return datalist
 
 def plotdata(indicator = 'Confirmed', minindicator=1, show = None, showtype='cumulative', dayrange = {'min': 0, 'max' : -1}, 
-             logscale=True, countrylist=defaultcountrylist, fulldata=d, figsize=(9.5,5)):
+             logscale=True, countrylist=defaultcountrylist, fulldata=d, figsize=(9.5,5), wpfile='data/world_population_2020.csv'):
     """
     Plots data for selected countries and indicator
     
@@ -183,10 +194,12 @@ def plotdata(indicator = 'Confirmed', minindicator=1, show = None, showtype='cum
     fulldata : raw data for all countries
 
     figsize : figure size (to be passed to plt.subplot)
+
+    wpfile : filename of the world population data
     """
     if show is None:
         show=indicator
-    datalist=builddatalist(indicator, minindicator, show, showtype, countrylist, d)
+    datalist=builddatalist(indicator, minindicator, show, showtype, countrylist, d, wpfile)
     fig, ax = plt.subplots(figsize=figsize)
     if showtype == 'cumulative':
         ylabel = show
