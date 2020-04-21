@@ -43,7 +43,8 @@ quarantine = {
     'El Salvador': '2020-03-11',
     'Denmark': '2020-03-13',
     'Italy': '2020-03-10',
-    'US': '2020-03-23'
+    'US': '2020-03-23',
+    'Venezuela': '2020-03-17'
 }
 
 def getdata(data_url = 'https://datahub.io/core/covid-19/datapackage.json', resourcename='countries-aggregated_csv'):
@@ -126,12 +127,21 @@ def builddatalist(indicator = 'Confirmed', minindicator=1, show = None, showtype
     
     Parameters
     ----------
-    indicator : indicator to shift the time series
+    indicator : indicator to shift the time series. Posible values: 
+        'Date, 
+        'Confirmed', 'Recovered', 'Deaths', 'Infected', 
+        'Confirmed/Total Population', 'Recovered/Total Population', 
+        'Deaths/Total Population', 'Infected/Total Population',
+        'Recovered/Confirmed', 'Deaths/Confirmed', 'Infected/Confirmed
     
     minindicator : value to start the time series. 
         Day 0 corresponds to the day when indicator >= minindicator
     
-    show : column to show. Default = indicator
+    show : column to show. Default = indicator. Posible values:
+        'Confirmed', 'Recovered', 'Deaths', 'Infected', 
+        'Confirmed/Total Population', 'Recovered/Total Population', 
+        'Deaths/Total Population', 'Infected/Total Population',
+        'Recovered/Confirmed', 'Deaths/Confirmed', 'Infected/Confirmed
     
     showtype : 'Cumulative' (default) no change in column 'show'. 
         Other options: 'Daily increase', 'Daily percentage increase'. These are created on demand.
@@ -178,12 +188,21 @@ def plotdata(indicator = 'Confirmed', minindicator=1, show = None, showtype='cum
     Parameters
     ----------
     
-    indicator : indicator to shift the time series
+    indicator : indicator to shift the time series. Posible values: 
+        'Date, 
+        'Confirmed', 'Recovered', 'Deaths', 'Infected', 
+        'Confirmed/Total Population', 'Recovered/Total Population', 
+        'Deaths/Total Population', 'Infected/Total Population',
+        'Recovered/Confirmed', 'Deaths/Confirmed', 'Infected/Confirmed
     
     minindicator : value to start the time series. 
         Day 0 corresponds to the day when indicator >= minindicator
     
-    show = column to show on plot. Default = indicator
+    show : column to show. Default = indicator. Posible values:
+        'Confirmed', 'Recovered', 'Deaths', 'Infected', 
+        'Confirmed/Total Population', 'Recovered/Total Population', 
+        'Deaths/Total Population', 'Infected/Total Population',
+        'Recovered/Confirmed', 'Deaths/Confirmed', 'Infected/Confirmed    
     
     dayrange : dict with min, max range to plot. max=-1 is plot all
     
@@ -224,7 +243,7 @@ def plotdata(indicator = 'Confirmed', minindicator=1, show = None, showtype='cum
         try:
             quarantine_date=quarantine[country]
         except KeyError:
-            print('%s not in quarantine'%(country))
+            print('%s not in quarantine list'%(country))
         else:
             quarantine_day_df=df[df['Date']==quarantine_date]
            #     print(quarantine_day_df)
