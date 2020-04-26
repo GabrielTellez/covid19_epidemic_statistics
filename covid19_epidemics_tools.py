@@ -5,6 +5,8 @@ import requests
 import numpy as np
 import datetime
 import matplotlib.pyplot as plt
+import plotly.express as px
+
 plt.rcParams.update({'figure.max_open_warning': 0})
 
 
@@ -132,7 +134,7 @@ def builddatalist(indicator = 'Confirmed', minindicator=1, show = None, showtype
         'Confirmed', 'Recovered', 'Deaths', 'Infected', 
         'Confirmed/Total Population', 'Recovered/Total Population', 
         'Deaths/Total Population', 'Infected/Total Population',
-        'Recovered/Confirmed', 'Deaths/Confirmed', 'Infected/Confirmed
+        'Recovered/Confirmed', 'Deaths/Confirmed', 'Infected/Confirmed'
     
     minindicator : value to start the time series. 
         Day 0 corresponds to the day when indicator >= minindicator
@@ -141,7 +143,7 @@ def builddatalist(indicator = 'Confirmed', minindicator=1, show = None, showtype
         'Confirmed', 'Recovered', 'Deaths', 'Infected', 
         'Confirmed/Total Population', 'Recovered/Total Population', 
         'Deaths/Total Population', 'Infected/Total Population',
-        'Recovered/Confirmed', 'Deaths/Confirmed', 'Infected/Confirmed
+        'Recovered/Confirmed', 'Deaths/Confirmed', 'Infected/Confirmed'
     
     showtype : 'Cumulative' (default) no change in column 'show'. 
         Other options: 'Daily increase', 'Daily percentage increase'. These are created on demand.
@@ -180,10 +182,13 @@ def builddatalist(indicator = 'Confirmed', minindicator=1, show = None, showtype
         datalist[country]=dat
     return datalist
 
+defaultengine = 'matplotlib'
+defaultenginemode='line'
 def plotdata(indicator = 'Confirmed', minindicator=1, show = None, showtype='cumulative', dayrange = {'min': 0, 'max' : -1}, 
-             logscale=True, countrylist=defaultcountrylist, fulldata=d, figsize=(9.5,5), wpfile='data/world_population_2020.csv'):
+             logscale=True, countrylist=defaultcountrylist, fulldata=d, figsize=(9.5,5), wpfile='data/world_population_2020.csv',
+             engine=defaultengine, enginemode = defaultenginemode):
     """
-    Plots data for selected countries and indicator
+    Plots data for selected countries and indicator. Uses Matplotlib.
     
     Parameters
     ----------
@@ -193,7 +198,7 @@ def plotdata(indicator = 'Confirmed', minindicator=1, show = None, showtype='cum
         'Confirmed', 'Recovered', 'Deaths', 'Infected', 
         'Confirmed/Total Population', 'Recovered/Total Population', 
         'Deaths/Total Population', 'Infected/Total Population',
-        'Recovered/Confirmed', 'Deaths/Confirmed', 'Infected/Confirmed
+        'Recovered/Confirmed', 'Deaths/Confirmed', 'Infected/Confirmed'
     
     minindicator : value to start the time series. 
         Day 0 corresponds to the day when indicator >= minindicator
@@ -202,7 +207,7 @@ def plotdata(indicator = 'Confirmed', minindicator=1, show = None, showtype='cum
         'Confirmed', 'Recovered', 'Deaths', 'Infected', 
         'Confirmed/Total Population', 'Recovered/Total Population', 
         'Deaths/Total Population', 'Infected/Total Population',
-        'Recovered/Confirmed', 'Deaths/Confirmed', 'Infected/Confirmed    
+        'Recovered/Confirmed', 'Deaths/Confirmed', 'Infected/Confirmed'    
     
     dayrange : dict with min, max range to plot. max=-1 is plot all
     
@@ -215,18 +220,37 @@ def plotdata(indicator = 'Confirmed', minindicator=1, show = None, showtype='cum
     figsize : figure size (to be passed to plt.subplot)
 
     wpfile : filename of the world population data
+
+    engine : graphics library to use. Possible values: 'matplotlib', 'plotly'
+
+    enginemode : type of graph for engine='plotly'. Possible values: 'line', 'bar'. Ignored if engine='matplotlib' 
     """
     if show is None:
         show=indicator
+    engines = ['matplotlib', 'plotly']
+    if engine not in engines:
+        print('engine "%s" unknown, using %s' % (engine, defaultengine))
+        engine=defaultengine
+    enginemodes = ['line', 'bar']
+    if enginemode not in enginemodes:
+        print('engine mode "%s" unknown, using %s' % (enginemode, defaultenginemode))
+        enginemode=defaultenginemode
     datalist=builddatalist(indicator, minindicator, show, showtype, countrylist, d, wpfile)
-    fig, ax = plt.subplots(figsize=figsize)
     if showtype == 'cumulative':
         ylabel = show
     else:
         ylabel = '%s %s' % (show, showtype)
+    xlabel = 'Days since first day when "'+indicator+'" >='+str(minindicator)
+    if logscale:
+        labellog = ' (log scale)'
+    else:
+        labellog = ''   
+    title = '%s covid-19 on %s %s' % ( ylabel, datetime.date.today().strftime("%d/%m/%Y"), labellog)
     
+    if engine == 'matplotlib':
+        fig, ax = plt.subplots(figsize=figsize)
+
     for country in countrylist:
-        color = next(ax._get_lines.prop_cycler)['color']
         df=datalist[country]
         if df.empty:
             continue
@@ -238,7 +262,9 @@ def plotdata(indicator = 'Confirmed', minindicator=1, show = None, showtype='cum
         dayzero_date=dayzero_df.at[dayzero_df.index[-1],'Date']
         if not isinstance(logscale, bool):
             logscale=True
-        df.plot(x='Day',y=ylabel,logy=logscale,label='%s day 0: %s' % (country,dayzero_date),ax=ax, color=color)
+        if engine == 'matplotlib':
+            color = next(ax._get_lines.prop_cycler)['color']
+            df.plot(x='Day',y=ylabel,logy=logscale,label='%s day 0: %s' % (country,dayzero_date),ax=ax, color=color)
         # get quarantine day info
         try:
             quarantine_date=quarantine[country]
@@ -254,16 +280,22 @@ def plotdata(indicator = 'Confirmed', minindicator=1, show = None, showtype='cum
                 # Quarantine date is out of bounds
                 print('%s quarantine date %s out of bounds. Day zero is %s' %(country,quarantine_date, dayzero_date))
             else:
-                ax.axvline(x=quarantine_day, color=color,
-                           label='%s quarantine on day %d (%s)' % (country,quarantine_day,quarantine_date))
-    ax.set_ylabel(ylabel)
-    ax.set_xlabel('Days from first day when "'+indicator+'" >='+str(minindicator))
-    if logscale:
-        labellog = ' (log scale)'
-    else:
-        labellog = ''   
-    ax.set_title('%s covid-19 on %s %s' % ( ylabel, datetime.date.today().strftime("%d/%m/%Y"), labellog) )
-    ax.grid()
-    ax.legend()
+                if engine == 'matplotlib':
+                    ax.axvline(x=quarantine_day, color=color,
+                            label='%s quarantine on day %d (%s)' % (country,quarantine_day,quarantine_date))
+                elif engine == 'plotly':
+                    pass #to do
+
+    if engine == 'matplotlib':
+        ax.set_ylabel(ylabel)
+        ax.set_xlabel(xlabel)
+        ax.set_title(title)
+        ax.grid()
+        ax.legend()
+    elif engine == 'plotly':
+        if enginemode == 'line':
+            fig = px.line(pd.concat(datalist), x='Day',y=ylabel, log_y=logscale, labels={'Day': xlabel}, color='Country', title=title)
+        elif enginemode == 'bar':
+            fig = px.bar(pd.concat(datalist), x='Day',y=ylabel, log_y=logscale, labels={'Day': xlabel}, color='Country',barmode='overlay', title=title)
     return fig
 
