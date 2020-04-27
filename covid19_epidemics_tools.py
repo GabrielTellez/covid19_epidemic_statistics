@@ -235,21 +235,27 @@ def plotdata(indicator = 'Confirmed', minindicator=1, show = None, showtype='cum
     if enginemode not in enginemodes:
         print('engine mode "%s" unknown, using %s' % (enginemode, defaultenginemode))
         enginemode=defaultenginemode
-    datalist=builddatalist(indicator, minindicator, show, showtype, countrylist, d, wpfile)
     if showtype == 'cumulative':
         ylabel = show
     else:
         ylabel = '%s %s' % (show, showtype)
     xlabel = 'Days since first day when "'+indicator+'" >='+str(minindicator)
+    if not isinstance(logscale, bool):
+        logscale=True
     if logscale:
         labellog = ' (log scale)'
     else:
         labellog = ''   
     title = '%s covid-19 on %s %s' % ( ylabel, datetime.date.today().strftime("%d/%m/%Y"), labellog)
     
+    datalist=builddatalist(indicator, minindicator, show, showtype, countrylist, d, wpfile)
+
     if engine == 'matplotlib':
         fig, ax = plt.subplots(figsize=figsize)
 
+# Get quarantine info and build a dict with that data to plot the vertical lines
+# TO DO: move this to builddatalist()
+    quarantine_dict={}
     for country in countrylist:
         df=datalist[country]
         if df.empty:
@@ -260,8 +266,6 @@ def plotdata(indicator = 'Confirmed', minindicator=1, show = None, showtype='cum
         # Get day 0 date
         dayzero_df=df[df['Day']==0]
         dayzero_date=dayzero_df.at[dayzero_df.index[-1],'Date']
-        if not isinstance(logscale, bool):
-            logscale=True
         if engine == 'matplotlib':
             color = next(ax._get_lines.prop_cycler)['color']
             df.plot(x='Day',y=ylabel,logy=logscale,label='%s day 0: %s' % (country,dayzero_date),ax=ax, color=color)
@@ -270,21 +274,23 @@ def plotdata(indicator = 'Confirmed', minindicator=1, show = None, showtype='cum
             quarantine_date=quarantine[country]
         except KeyError:
             print('%s not in quarantine list'%(country))
+            quarantine_dict[country]=False
         else:
             quarantine_day_df=df[df['Date']==quarantine_date]
            #     print(quarantine_day_df)
             try:
-                quarantine_day=quarantine_day_df.at[quarantine_day_df.index[-1],'Day']
+                quarantine_dict[country]=quarantine_day_df.to_dict('records')[0]
+#               quarantine_day=quarantine_day_df.at[quarantine_day_df.index[-1],'Day']
+                quarantine_day=quarantine_dict[country]['Day']
            #    print(quarantine_day)
             except IndexError:
                 # Quarantine date is out of bounds
                 print('%s quarantine date %s out of bounds. Day zero is %s' %(country,quarantine_date, dayzero_date))
+                quarantine_dict[country]=False
             else:
                 if engine == 'matplotlib':
                     ax.axvline(x=quarantine_day, color=color,
-                            label='%s quarantine on day %d (%s)' % (country,quarantine_day,quarantine_date))
-                elif engine == 'plotly':
-                    pass #to do
+                            label='%s quarantine on day %d (%s)' % (country,quarantine_day,quarantine_date))              
 
     if engine == 'matplotlib':
         ax.set_ylabel(ylabel)
@@ -294,8 +300,21 @@ def plotdata(indicator = 'Confirmed', minindicator=1, show = None, showtype='cum
         ax.legend()
     elif engine == 'plotly':
         if enginemode == 'line':
-            fig = px.line(pd.concat(datalist), x='Day',y=ylabel, log_y=logscale, labels={'Day': xlabel}, color='Country', title=title)
+            fig = px.line(pd.concat(datalist), x='Day',y=ylabel, log_y=logscale, labels={'Day': xlabel}, color='Country', 
+            title=title, hover_data=['Date'])
         elif enginemode == 'bar':
-            fig = px.bar(pd.concat(datalist), x='Day',y=ylabel, log_y=logscale, labels={'Day': xlabel}, color='Country',barmode='overlay', title=title)
+            fig = px.bar(pd.concat(datalist), x='Day',y=ylabel, log_y=logscale, labels={'Day': xlabel}, color='Country',barmode='overlay', 
+            title=title, hover_data=['Date'])
+        # Display starting quarantine day for each country
+        num=20
+        for country in countrylist:
+            if quarantine_dict[country] is not False:
+                x=np.full(num,quarantine_dict[country]['Day'])
+                y=np.geomspace(minindicator,quarantine_dict[country][show],num=num)
+                hovertemplatestr='%s quarantine on day %s: %s' % (country,quarantine_dict[country]['Day'],quarantine_dict[country]['Date'])
+                fig.add_scatter(x=x,y=y,
+                                hovertemplate = hovertemplatestr,
+                                showlegend=False, legendgroup=country, name='',
+                                marker_color='rgba(100, 0, 0, .8)')
     return fig
 
