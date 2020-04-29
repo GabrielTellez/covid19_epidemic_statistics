@@ -182,11 +182,12 @@ def builddatalist(indicator = 'Confirmed', minindicator=1, show = None, showtype
         datalist[country]=dat
     return datalist
 
-defaultengine = 'matplotlib'
+defaultengine = 'plotly'
 defaultenginemode='line'
 def plotdata(indicator = 'Confirmed', minindicator=1, show = None, showtype='cumulative', dayrange = {'min': 0, 'max' : -1}, 
-             logscale=True, countrylist=defaultcountrylist, fulldata=d, figsize=(9.5,5), wpfile='data/world_population_2020.csv',
-             engine=defaultengine, enginemode = defaultenginemode):
+             logscale=True, countrylist=defaultcountrylist, fulldata=d, wpfile='data/world_population_2020.csv',
+             engine=defaultengine, enginemode = defaultenginemode,
+             **kwargs):
     """
     Plots data for selected countries and indicator. Uses Matplotlib.
     
@@ -208,6 +209,9 @@ def plotdata(indicator = 'Confirmed', minindicator=1, show = None, showtype='cum
         'Confirmed/Total Population', 'Recovered/Total Population', 
         'Deaths/Total Population', 'Infected/Total Population',
         'Recovered/Confirmed', 'Deaths/Confirmed', 'Infected/Confirmed'    
+
+    showtype : 'Cumulative' (default) no change in column 'show'. 
+        Other options: 'Daily increase', 'Daily percentage increase'. These are created on demand.
     
     dayrange : dict with min, max range to plot. max=-1 is plot all
     
@@ -217,13 +221,13 @@ def plotdata(indicator = 'Confirmed', minindicator=1, show = None, showtype='cum
     
     fulldata : raw data for all countries
 
-    figsize : figure size (to be passed to plt.subplot)
-
     wpfile : filename of the world population data
 
     engine : graphics library to use. Possible values: 'matplotlib', 'plotly'
 
     enginemode : type of graph for engine='plotly'. Possible values: 'line', 'bar'. Ignored if engine='matplotlib' 
+
+    **kwargs : other keyworded arguments to be passed to plot functions.
     """
     if show is None:
         show=indicator
@@ -239,7 +243,7 @@ def plotdata(indicator = 'Confirmed', minindicator=1, show = None, showtype='cum
         ylabel = show
     else:
         ylabel = '%s %s' % (show, showtype)
-    xlabel = 'Days since first day when "'+indicator+'" >='+str(minindicator)
+    xlabel = 'Days since first day when "'+indicator+' >='+str(minindicator)+'"'
     if not isinstance(logscale, bool):
         logscale=True
     if logscale:
@@ -251,7 +255,7 @@ def plotdata(indicator = 'Confirmed', minindicator=1, show = None, showtype='cum
     datalist=builddatalist(indicator, minindicator, show, showtype, countrylist, d, wpfile)
 
     if engine == 'matplotlib':
-        fig, ax = plt.subplots(figsize=figsize)
+        fig, ax = plt.subplots(**kwargs)
 
 # Get quarantine info and build a dict with that data to plot the vertical lines
 # TO DO: move this to builddatalist()
@@ -301,10 +305,12 @@ def plotdata(indicator = 'Confirmed', minindicator=1, show = None, showtype='cum
     elif engine == 'plotly':
         if enginemode == 'line':
             fig = px.line(pd.concat(datalist), x='Day',y=ylabel, log_y=logscale, labels={'Day': xlabel}, color='Country', 
-            title=title, hover_data=['Date'])
+            title=title, hover_data=['Date'],
+            **kwargs)
         elif enginemode == 'bar':
-            fig = px.bar(pd.concat(datalist), x='Day',y=ylabel, log_y=logscale, labels={'Day': xlabel}, color='Country',barmode='overlay', 
-            title=title, hover_data=['Date'])
+            fig = px.bar(pd.concat(datalist), x='Day',y=ylabel, log_y=logscale, labels={'Day': xlabel}, color='Country', # barmode='overlay', TO DO: figure a way to change the default 
+            title=title, hover_data=['Date'],
+            **kwargs)
         # Display starting quarantine day for each country
         num=20
         for country in countrylist:
