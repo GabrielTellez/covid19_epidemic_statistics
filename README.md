@@ -7,7 +7,13 @@ Visualization and analysis of COVID-19 epidemic data statistics
 Module with function utilities to get and visualize data. Plots data for several countries to compare them.
 
 ### [testing.ipynb](testing.ipynb)
-Jupyter Python example notebook using the tools from covid19_epidemics_tools.py.
+Jupyter Python example notebook using the tools from covid19_epidemics_tools.py and the matplotlib library.
+
+### [testing_plotly.ipynb](testing.ipynb)
+Jupyter Python example notebook using the tools from covid19_epidemics_tools.py and the plotly library.
+
+### [2020_04_28.ipynb](2020_04_28.ipynb)
+Jupyter Python notebook with plots of some indicators on 2020/04/28.
 
 ### [tmp/](tmp)
 Scratch area for new code test
