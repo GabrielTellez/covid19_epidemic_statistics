@@ -1,5 +1,6 @@
 name: covid_env
 channels:
+  - plotly
   - conda-forge
   - defaults
 dependencies:
@@ -35,6 +36,7 @@ dependencies:
   - ipykernel=5.2.0=py38h5ca1d4c_1
   - ipython=7.13.0=py38h32f6830_2
   - ipython_genutils=0.2.0=py_1
+  - ipywidgets=7.5.1=py_0
   - isodate=0.6.0=py_1
   - jdcal=1.4.1=py_0
   - jedi=0.16.0=py38h32f6830_1
@@ -70,13 +72,14 @@ dependencies:
   - numpy=1.18.1=py38h93ca92e_0
   - numpy-base=1.18.1=py38hc3f5095_1
   - openpyxl=3.0.3=py_0
-  - openssl=1.1.1f=he774522_0
+  - openssl=1.1.1g=he774522_0
   - pandas=1.0.3=py38h47e9c7a_0
   - pandoc=2.9.2=0
   - pandocfilters=1.4.2=py_1
   - parso=0.6.2=py_0
   - pickleshare=0.7.5=py38h32f6830_1001
   - pip=20.0.2=py38_1
+  - plotly=4.6.0=py_0
   - prometheus_client=0.7.1=py_0
   - prompt-toolkit=3.0.5=py_0
   - pycparser=2.20=py_0
@@ -95,6 +98,7 @@ dependencies:
   - pyzmq=19.0.0=py38hc5dc6fd_1
   - qt=5.9.7=vc14h73c81de_0
   - requests=2.23.0=pyh8c360ce_2
+  - retrying=1.3.3=py_2
   - rfc3986=1.3.2=py_0
   - s3transfer=0.3.3=py38h32f6830_1
   - send2trash=1.5.0=py_0
@@ -116,6 +120,7 @@ dependencies:
   - wcwidth=0.1.9=pyh9f0ad1d_0
   - webencodings=0.5.1=py_1
   - wheel=0.34.2=py38_0
+  - widgetsnbextension=3.5.1=py38_0
   - win_inet_pton=1.1.0=py38_0
   - wincertstore=0.2=py38_0
   - winpty=0.4.3=4
@@ -123,5 +128,5 @@ dependencies:
   - zeromq=4.3.2=h6538335_2
   - zipp=3.1.0=py_0
   - zlib=1.2.11=h62dcd97_3
-
+prefix: C:\Users\telle\Miniconda3-64-bit\envs\covid_env
 
