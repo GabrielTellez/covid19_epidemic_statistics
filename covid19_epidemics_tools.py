@@ -303,10 +303,15 @@ def plotdata(indicator = 'Confirmed', minindicator=1, show = None, showtype='cum
         ax.grid()
         ax.legend()
     elif engine == 'plotly':
-        if enginemode == 'line':
-            fig = px.line(pd.concat(datalist), x='Day',y=ylabel, log_y=logscale, labels={'Day': xlabel}, color='Country', 
-            title=title, hover_data=['Date'],
-            **kwargs)
+        if indicator == 'Date':
+            xshow = 'Date'
+        else:
+            xshow = 'Day'
+        if enginemode == 'line':  
+            fig = px.line(
+                pd.concat(datalist), x=xshow,y=ylabel, log_y=logscale, labels={'Day': xlabel}, color='Country', 
+                title=title, hover_data=['Date'], **kwargs
+                )
         elif enginemode == 'bar':
             fig = px.bar(pd.concat(datalist), x='Day',y=ylabel, log_y=logscale, labels={'Day': xlabel}, color='Country', # barmode='overlay', TO DO: figure a way to change the default 
             title=title, hover_data=['Date'],
