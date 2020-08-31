@@ -49,9 +49,10 @@ quarantine = {
     'Venezuela': '2020-03-17'
 }
 
-def getdata(data_url = 'https://datahub.io/core/covid-19/datapackage.json', resourcename='countries-aggregated_csv'):
+def getdata_old(data_url = 'https://datahub.io/core/covid-19/datapackage.json', resourcename='countries-aggregated_csv'):
     """
     Get data from the web.
+    datahub is outdated. Rewrote code to read directly from CSSE.
 
     Parameters:
     ===========
@@ -78,6 +79,43 @@ def getdata(data_url = 'https://datahub.io/core/covid-19/datapackage.json', reso
             s=requests.get(url).text
             data = pd.read_csv(StringIO(s))
     return data
+
+def getdata():
+    """Get data from CSSE.
+
+    Output:
+    =======
+
+    pd.DataFrame with the epidemic statistics data of all countries with
+    format:
+    Date, Country, Recovered, Deaths 
+    """
+    column_labels = ['Confirmed', 'Recovered', 'Deaths' ]
+    urls = {}
+    dfs={}
+    for l in column_labels:
+        urls[l]=f'https://github.com/CSSEGISandData/COVID-19/raw/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_{l.lower()}_global.csv'
+        tmp_df = pd.read_csv(urls[l])
+        # consolidate data for all country dropping regional data
+        dfs[l]=tmp_df[tmp_df['Province/State'].isnull()]
+    # merge the three dataframes into one
+    fulldata=pd.DataFrame()
+    for country in dfs['Confirmed']['Country/Region']:
+        country_data=pd.DataFrame()
+        for state in column_labels:
+            df=dfs[state]
+            country_data_df = df[df['Country/Region']==country]
+            dates_data = country_data_df.drop(columns = ['Province/State', 'Country/Region', 'Lat', 'Long']).T
+            dates_data.reset_index(level=0, inplace=True)
+            dates_data.columns = ['Date',state]
+            if state == 'Confirmed':
+                country_data['Date']=dates_data['Date']
+                country_data['Country']=country
+            country_data[state]=dates_data[state]
+        fulldata=fulldata.append(country_data)
+    # Convert dates from m/d/y format to isoformat YYYY-m-d 
+    fulldata['Date']=list(map(lambda dat: datetime.datetime.strptime(dat,'%m/%d/%y').date().isoformat(),fulldata['Date'])) 
+    return fulldata
 
 def readdata(filenamebase='data/covid_data_',date=datetime.date.today().isoformat()):
     """
