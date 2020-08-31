@@ -22,10 +22,12 @@ Scratch area for new code test
 Some plots obtained with the code.
 
 ### [data/](data)
-Backups of epidemic statistic data. Up to date data is from  
-https://datahub.io/core/covid-19/datapackage.json  
-based from Johns Hopkins University Center for Systems Science and Engineering (CSSE) data at:  
+Backups of epidemic statistic data. Up to date data is from
+Johns Hopkins University Center for Systems Science and Engineering (CSSE) data:  
 https://www.arcgis.com/apps/opsdashboard/index.html#/bda7594740fd40299423467b48e9ecf6
+at:
+https://github.com/CSSEGISandData/COVID-19/raw/master/csse_covid_19_data/csse_covid_19_time_series
+
 
 
 ## Dependencies:
